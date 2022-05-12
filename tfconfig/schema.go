@@ -11,10 +11,6 @@ var rootSchema = &hcl.BodySchema{
 			LabelNames: nil,
 		},
 		{
-			Type:       "locals",
-			LabelNames: nil,
-		},
-		{
 			Type:       "variable",
 			LabelNames: []string{"name"},
 		},
@@ -78,6 +74,23 @@ var variableSchema = &hcl.BodySchema{
 		},
 		{
 			Name: "sensitive",
+		},
+	},
+	Blocks: []hcl.BlockHeaderSchema{
+		{
+			Type:       "validation",
+			LabelNames: nil,
+		},
+	},
+}
+
+var variableValidationSchema = &hcl.BodySchema{
+	Attributes: []hcl.AttributeSchema{
+		{
+			Name: "condition",
+		},
+		{
+			Name: "error_message",
 		},
 	},
 }

@@ -103,18 +103,7 @@ func LoadModuleFromFile(file *hcl.File, mod *Module) hcl.Diagnostics {
 				}
 			}
 
-			case "locals":
-			attr, blockDiags := block.Body.JustAttributes()
-			diags = append(diags, blockDiags...)
-			for k, _ := range attr {
-				l := &Locals{
-					Name:  k,
-					Value: string(attr[k].Expr.Range().SliceBytes(file.Bytes)),
-				}
-				mod.Locals = append(mod.Locals, l)
-			}
-
-			case "variable":
+		case "variable":
 			content, _, contentDiags := block.Body.PartialContent(variableSchema)
 			diags = append(diags, contentDiags...)
 
@@ -191,6 +180,35 @@ func LoadModuleFromFile(file *hcl.File, mod *Module) hcl.Diagnostics {
 				valDiags := gohcl.DecodeExpression(attr.Expr, nil, &sensitive)
 				diags = append(diags, valDiags...)
 				v.Sensitive = sensitive
+			}
+
+			for _, block := range content.Blocks {
+				switch block.Type {
+
+				case "validation":
+					content, _, contentDiags := block.Body.PartialContent(variableValidationSchema)
+					diags = append(diags, contentDiags...)
+					var variableValidation VariableValidation
+
+					if attr, defined := content.Attributes["condition"]; defined {
+						variableValidation.Condition = attr.Expr
+					}
+
+					if attr, defined := content.Attributes["error_message"]; defined {
+						var errorMessage string
+						valDiags := gohcl.DecodeExpression(attr.Expr, nil, &errorMessage)
+						diags = append(diags, valDiags...)
+						variableValidation.ErrorMessage = errorMessage
+					}
+
+					v.Validations = append(v.Validations, variableValidation)
+
+				default:
+					// Should never happen because our cases above should be
+					// exhaustive for our schema.
+					panic(fmt.Errorf("unhandled block type %q", block.Type))
+
+				}
 			}
 
 		case "output":

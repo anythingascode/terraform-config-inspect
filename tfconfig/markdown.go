@@ -60,13 +60,6 @@ Provider Requirements:
 {{- if .Description}}: {{ .Description }}{{ end }}
 {{- end}}{{end}}
 
-{{- if .Locals}}
-
-## Locals
-{{- range .Locals }}
-* {{ tt .Name }}{{ if .Value}}: {{ .Value }}{{ end }}
-{{- end}}{{end}}
-
 {{- if .Outputs}}
 
 ## Output Values
